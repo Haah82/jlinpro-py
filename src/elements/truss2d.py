@@ -56,14 +56,16 @@ class Truss2D(AbstractElement):
         k_local = (E*A/L) * [[1, -1],
                              [-1, 1]]
 
-        Expanded to 4x4 for 2 nodes with 2 DOFs each:
-        [[k, 0, -k, 0],
-         [0, 0,  0, 0],
-         [-k, 0, k, 0],
-         [0, 0,  0, 0]]
+        Expanded to 6x6 for 2 nodes with 3 DOFs each (ux, uy, rz) to match beam elements:
+        [[k, 0, 0, -k, 0, 0],
+         [0, 0, 0,  0, 0, 0],
+         [0, 0, 0,  0, 0, 0],
+         [-k, 0, 0, k, 0, 0],
+         [0, 0, 0,  0, 0, 0],
+         [0, 0, 0,  0, 0, 0]]
 
         Returns:
-            4x4 local stiffness matrix
+            6x6 local stiffness matrix
         """
         L = self.get_length()
         E = self.material.E
@@ -71,8 +73,12 @@ class Truss2D(AbstractElement):
 
         k = E * A / L
 
-        # Local stiffness (only axial DOF is active)
-        K_local = np.array([[k, 0, -k, 0], [0, 0, 0, 0], [-k, 0, k, 0], [0, 0, 0, 0]])
+        # Local stiffness (only axial DOF is active, zeros for lateral and rotation)
+        K_local = np.zeros((6, 6))
+        K_local[0, 0] = k
+        K_local[0, 3] = -k
+        K_local[3, 0] = -k
+        K_local[3, 3] = k
 
         return K_local
 
@@ -82,27 +88,37 @@ class Truss2D(AbstractElement):
 
         Transforms from local (along element) to global (XY) coordinates.
 
-        T = [[c, s, 0, 0],
-             [-s, c, 0, 0],
-             [0, 0, c, s],
-             [0, 0, -s, c]]
+        Returns 6x6 matrix for 2 nodes with 3 DOFs each (ux, uy, rz) to match beam elements:
+        T = [[c, s, 0, 0, 0, 0],
+             [-s, c, 0, 0, 0, 0],
+             [0, 0, 1, 0, 0, 0],
+             [0, 0, 0, c, s, 0],
+             [0, 0, 0, -s, c, 0],
+             [0, 0, 0, 0, 0, 1]]
 
         where c = cos(theta), s = sin(theta)
 
         Returns:
-            4x4 transformation matrix
+            6x6 transformation matrix
         """
         cx, cy = self.get_direction_cosines()
 
-        # Transformation matrix for 2 nodes, 2 DOFs each
-        T = np.array(
-            [
-                [cx, cy, 0, 0],
-                [-cy, cx, 0, 0],
-                [0, 0, cx, cy],
-                [0, 0, -cy, cx],
-            ]
-        )
+        # Transformation matrix for 2 nodes, 3 DOFs each
+        T = np.zeros((6, 6))
+
+        # Node 1: translation + rotation
+        T[0, 0] = cx
+        T[0, 1] = cy
+        T[1, 0] = -cy
+        T[1, 1] = cx
+        T[2, 2] = 1.0  # Rotation unchanged
+
+        # Node 2: translation + rotation
+        T[3, 3] = cx
+        T[3, 4] = cy
+        T[4, 3] = -cy
+        T[4, 4] = cx
+        T[5, 5] = 1.0  # Rotation unchanged
 
         return T
 
@@ -110,16 +126,17 @@ class Truss2D(AbstractElement):
         """
         Get global DOF indices for this truss element.
 
-        For 2D truss: [node1_ux, node1_uy, node2_ux, node2_uy]
+        For 2D truss: [node1_ux, node1_uy, node1_rz, node2_ux, node2_uy, node2_rz]
+        (Returns 6 DOFs to match beam format, even though rotation isn't used)
 
         Returns:
-            List of 4 global DOF indices
+            List of 6 global DOF indices
         """
         dofs = []
         for node in self.nodes:
             # Assuming node.id can be used to calculate global DOF index
             # This will be properly implemented in the Structure class
-            dofs.extend([node.id * 3, node.id * 3 + 1])
+            dofs.extend([node.id * 3, node.id * 3 + 1, node.id * 3 + 2])
 
         return dofs
 
@@ -128,14 +145,16 @@ class Truss2D(AbstractElement):
         Calculate internal forces from global displacements.
 
         Args:
-            u_global: Global displacement vector for element DOFs
+            u_global: Global displacement vector for element DOFs (6 values)
 
         Returns:
             Dictionary with axial_force and stress
         """
-        # Extract element displacements (4 values)
-        if len(u_global) != 4:
-            raise ValueError("Expected 4 displacement values for 2D truss")
+        # Extract element displacements (6 values to match beam format)
+        if len(u_global) != 6:
+            raise ValueError(
+                f"Expected 6 displacement values for 2D truss, got {len(u_global)}"
+            )
 
         # Transform to local coordinates
         T = self.get_transformation_matrix()
@@ -146,8 +165,8 @@ class Truss2D(AbstractElement):
         E = self.material.E
         A = self.section.get_properties()["A"]
 
-        # u_local[0] = u_i_axial, u_local[2] = u_j_axial
-        axial_elongation = u_local[2] - u_local[0]
+        # u_local[0] = u_i_axial, u_local[3] = u_j_axial (in 6-DOF format)
+        axial_elongation = u_local[3] - u_local[0]
         axial_force = (E * A / L) * axial_elongation
 
         # Stress = Force / Area

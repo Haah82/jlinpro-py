@@ -372,6 +372,40 @@ class RectangularSection(Section):
     width: float = Field(..., description="Width b (m)", gt=0)
     height: float = Field(..., description="Height h (m)", gt=0)
 
+    @computed_field
+    @property
+    def A(self) -> float:
+        """Cross-sectional area."""
+        return self.width * self.height
+
+    @computed_field
+    @property
+    def Ix(self) -> float:
+        """Moment of inertia about strong axis (x-x)."""
+        return self.width * self.height**3 / 12.0
+
+    @computed_field
+    @property
+    def Iy(self) -> float:
+        """Moment of inertia about weak axis (y-y)."""
+        return self.height * self.width**3 / 12.0
+
+    @computed_field
+    @property
+    def Iz(self) -> float:
+        """Polar moment of inertia."""
+        return self.Ix + self.Iy
+
+    @computed_field
+    @property
+    def J(self) -> float:
+        """Torsional constant (Saint-Venant)."""
+        b = self.width
+        h = self.height
+        beta = min(b, h) / max(b, h)
+        k = (1 / 3) * (1 - 0.63 * beta)
+        return k * max(b, h) * min(b, h) ** 3
+
     def validate_geometry(self) -> bool:
         """Validate rectangular section dimensions."""
         if self.width <= 0 or self.height <= 0:
@@ -423,6 +457,51 @@ class CircularSection(Section):
 
     diameter: float = Field(..., description="Outer diameter (m)", gt=0)
     thickness: float = Field(default=0.0, description="Wall thickness (m)", ge=0)
+
+    @computed_field
+    @property
+    def A(self) -> float:
+        """Cross-sectional area."""
+        D = self.diameter
+        t = self.thickness
+        d = D - 2 * t
+        if t == 0:
+            return np.pi * D**2 / 4
+        return np.pi * (D**2 - d**2) / 4
+
+    @computed_field
+    @property
+    def Ix(self) -> float:
+        """Moment of inertia about x-axis."""
+        D = self.diameter
+        t = self.thickness
+        d = D - 2 * t
+        if t == 0:
+            return np.pi * D**4 / 64
+        return np.pi * (D**4 - d**4) / 64
+
+    @computed_field
+    @property
+    def Iy(self) -> float:
+        """Moment of inertia about y-axis (equals Ix for circular)."""
+        return self.Ix
+
+    @computed_field
+    @property
+    def Iz(self) -> float:
+        """Polar moment of inertia."""
+        return 2 * self.Ix
+
+    @computed_field
+    @property
+    def J(self) -> float:
+        """Torsional constant."""
+        D = self.diameter
+        t = self.thickness
+        d = D - 2 * t
+        if t == 0:
+            return np.pi * D**4 / 32
+        return np.pi * (D**4 - d**4) / 32
 
     def validate_geometry(self) -> bool:
         """Validate circular section dimensions."""

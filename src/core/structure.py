@@ -98,26 +98,34 @@ class Structure(BaseModel):
         Calculate total number of degrees of freedom in the structure.
 
         Returns:
-            Total number of DOFs (3 * number of nodes for 2D)
+            Total number of DOFs (6 * number of nodes for 3D)
+            Supports 6 DOFs per node: ux, uy, uz, rx, ry, rz
         """
         if not self.nodes:
             return 0
 
-        # For now, assume 3 DOFs per node (2D frame analysis)
-        # This can be made more sophisticated later
-        return len(self.nodes) * 3
+        # Use 6 DOFs per node (3D frame analysis)
+        # This supports both 2D and 3D elements
+        return len(self.nodes) * 6
 
     def get_dof_map(self) -> Dict[int, List[int]]:
         """
         Create mapping from node ID to global DOF indices.
 
         Returns:
-            Dictionary: node_id -> [dof_x, dof_y, dof_rz]
+            Dictionary: node_id -> [dof_ux, dof_uy, dof_uz, dof_rx, dof_ry, dof_rz]
         """
         dof_map = {}
         for node_id in sorted(self.nodes.keys()):
-            base_dof = node_id * 3
-            dof_map[node_id] = [base_dof, base_dof + 1, base_dof + 2]
+            base_dof = node_id * 6
+            dof_map[node_id] = [
+                base_dof,
+                base_dof + 1,
+                base_dof + 2,
+                base_dof + 3,
+                base_dof + 4,
+                base_dof + 5,
+            ]
 
         return dof_map
 
@@ -185,8 +193,8 @@ class Structure(BaseModel):
         for node_id, node in self.nodes.items():
             node_dofs = dof_map[node_id]
 
-            # Check each DOF (ux, uy, rz for 2D)
-            for local_dof in range(3):
+            # Check each DOF (ux, uy, uz, rx, ry, rz for 3D)
+            for local_dof in range(6):
                 global_dof = node_dofs[local_dof]
 
                 if node.is_restrained(local_dof):

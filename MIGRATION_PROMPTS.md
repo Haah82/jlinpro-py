@@ -141,6 +141,63 @@ Implement in `src/core/structure.py`:
 Validation test: Simply-supported beam with uniform load, compare with beam theory.
 ```
 
+### Prompt 1.5: 3D Elements & Engine Upgrade (Beam3D, Truss3D)
+```
+Reference: 
+- `/home/hha/work/oofem-3.0/src/sm/Elements/Beams/beam3d.C` (Lines 487-550 for transformation)
+- `/home/hha/work/oofem-3.0/src/sm/Elements/Bars/truss3d.C`
+
+**Goal**: Extend FEM engine to support 6 DOFs per node and implement 3D elements using OOFEM's geometric algorithms.
+
+1. **Engine Upgrade** (`src/core/structure.py`):
+   - Update `Structure.get_num_dofs`: Return `len(nodes) * 6` (ux, uy, uz, rx, ry, rz)
+   - Update `Structure.get_dof_map`: Map each node to 6 global indices (0-5)
+   - Update `Structure.apply_boundary_conditions`: Handle 6 restraint flags per node
+
+2. **Truss3D** (`src/elements/truss3d.py`):
+   - Inherits `AbstractElement`
+   - **Transformation Logic** (Port from `Truss3d::giveLocalCoordinateSystem`):
+     * x_local = (node2 - node1).normalize()
+     * Construct y_local arbitrary orthogonal: if x_local approx vertical use y_ref=(0,1,0), else y_ref=(0,0,1). y_local = cross(x_local, y_ref).norm()
+     * z_local = cross(x_local, y_local)
+     * Build 3x3 rotation matrix R = [x_local, y_local, z_local]
+     * Build 12x12 T = block_diag(R, R, R, R)
+   - **Stiffness**: 
+     * Local k (12x12): Only axial terms (EA/L) populated at indices corresponding to ux1, ux2.
+     * k_global = T.T @ k_local @ T
+
+3. **Beam3D** (`src/elements/beam3d.py`):
+   - Inherits `AbstractElement`
+   - **Transformation Logic** (Port from `Beam3d::giveLocalCoordinateSystem`):
+     * Inputs: node1, node2, optional `ref_node` or `roll_angle` (gamma).
+     * x_local = (node2 - node1).normalize()
+     * **Orientation Algorithm**:
+       a. If `ref_node` exists: v_ref = ref_node - node1; z_local = cross(x_local, v_ref).norm()
+       b. Else use "Up-Vector":
+          - v_up = (0, 0, 1)
+          - If abs(dot(x_local, v_up)) > 0.999 (vertical member): v_up = (0, 1, 0)
+          - y_temp = cross(x_local, v_up).norm()
+          - Apply Roll Rotation: Rotate y_temp by `roll_angle` around x_local -> gives final y_local
+          - z_local = cross(x_local, y_local).norm()
+     * R = [x_local, y_local, z_local] (rows are unit vectors)
+     * T = block_diag(R, R, R, R) (12x12)
+   - **Stiffness Matrix** (12x12 analytical with shear deformation):
+     * Terms: EA/L (axial), GJ/L (torsion)
+     * Bending terms (12*EI/L^3, etc.) including shear correction factors (Phi_y, Phi_z) if material/section properties allow (OOFEM `kappay`, `kappaz`).
+     * Use standard Timoshenko beam formulation if shear area provided, else Bernoulli (Phi=0).
+
+4. **Integration**:
+   - Ensure `assemble_global_stiffness` loops (0..5) for 6 DOFs.
+   - Update `Beam2D`/`Truss2D` to return 6x6 matrices padded to 12x12 (or just map their 6x6 local to specific indices in the 12x12 global space). Best approach: Standardize all elements to return 12x12 global stiffness matrices for 3D analysis, even 2D elements (just with zeros in z/rot_x/rot_y rows).
+
+**Unit Tests** (`tests/unit/test_elements_3d.py`):
+- Test `Truss3D`: 3D truss bar, check eigenvalues (6 zero rigid body modes).
+- Test `Beam3D`:
+  - Vertical column with roll angle = 0 vs 90 degrees.
+  - Horizontal beam with reference node.
+  - Compare stiffness matrices against known examples.
+```
+
 ---
 
 ## Phase 2: Streamlit UI & Visualization

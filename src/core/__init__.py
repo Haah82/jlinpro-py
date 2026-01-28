@@ -1,0 +1,1 @@
+"""Core structural analysis module"""

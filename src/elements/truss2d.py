@@ -145,20 +145,34 @@ class Truss2D(AbstractElement):
         Calculate internal forces from global displacements.
 
         Args:
-            u_global: Global displacement vector for element DOFs (6 values)
+            u_global: Global displacement vector for element DOFs
+                     Can be 6 values (legacy) or 12 values (6 DOFs per node)
 
         Returns:
             Dictionary with axial_force and stress
         """
-        # Extract element displacements (6 values to match beam format)
-        if len(u_global) != 6:
+        # Handle both 6-value (element DOFs only) and 12-value (global 6 DOFs per node) inputs
+        if len(u_global) == 12:
+            # Extract relevant DOFs for 2D truss: [ux, uy, rz] at indices [0, 1, 5] per node
+            # Node i: [0, 1, 5], Node j: [6, 7, 11]
+            u_elem = np.array([
+                u_global[0],  # ux_i
+                u_global[1],  # uy_i
+                u_global[5],  # rz_i
+                u_global[6],  # ux_j
+                u_global[7],  # uy_j
+                u_global[11]  # rz_j
+            ])
+        elif len(u_global) == 6:
+            u_elem = u_global
+        else:
             raise ValueError(
-                f"Expected 6 displacement values for 2D truss, got {len(u_global)}"
+                f"Expected 6 or 12 displacement values for 2D truss, got {len(u_global)}"
             )
 
         # Transform to local coordinates
         T = self.get_transformation_matrix()
-        u_local = T @ u_global
+        u_local = T @ u_elem
 
         # Axial force: F = (E*A/L) * (u_j - u_i)
         L = self.get_length()

@@ -1,0 +1,94 @@
+# TCVN 5574:2018 Material Properties
+# Vietnamese Standard for Concrete and Reinforced Concrete Structures
+
+concrete:
+  B15:
+    Rb: 8.5    # Design compressive strength (MPa)
+    Rbt: 0.75  # Design tensile strength (MPa)
+    Eb: 23000  # Modulus of elasticity (MPa)
+  
+  B20:
+    Rb: 11.5
+    Rbt: 0.90
+    Eb: 27500
+  
+  B25:
+    Rb: 14.5
+    Rbt: 1.05
+    Eb: 30000
+  
+  B30:
+    Rb: 17.0
+    Rbt: 1.20
+    Eb: 32500
+  
+  B35:
+    Rb: 19.5
+    Rbt: 1.30
+    Eb: 34500
+  
+  B40:
+    Rb: 22.0
+    Rbt: 1.40
+    Eb: 36000
+  
+  B45:
+    Rb: 25.0
+    Rbt: 1.50
+    Eb: 37000
+  
+  B50:
+    Rb: 27.5
+    Rbt: 1.60
+    Eb: 38000
+  
+  B60:
+    Rb: 33.0
+    Rbt: 1.80
+    Eb: 39500
+
+steel:
+  CB240T:
+    Rs: 210    # Design tensile strength (MPa)
+    Rsc: 210   # Design compressive strength (MPa)
+    Es: 200000 # Modulus of elasticity (MPa)
+  
+  CB300V:
+    Rs: 260
+    Rsc: 260
+    Es: 200000
+  
+  CB400V:
+    Rs: 350
+    Rsc: 350
+    Es: 200000
+  
+  CB500V:
+    Rs: 435
+    Rsc: 400
+    Es: 200000
+
+# Design parameters
+parameters:
+  min_cover: 15.0  # Minimum concrete cover (mm)
+  gamma_b: 1.0     # Concrete partial safety factor
+  gamma_s: 1.15    # Steel partial safety factor
+  
+  # Relative compression zone depth limits (ξ_R) per Table 8.1
+  xi_limits:
+    CB240T: 0.60
+    CB300V: 0.60
+    CB400V: 0.55
+    CB500V: 0.50
+  
+  # Crack width limits (mm) per Table 8.2
+  crack_limits:
+    normal: 0.4      # Normal environment
+    aggressive: 0.3  # Aggressive environment
+    marine: 0.2      # Marine environment
+  
+  # Deflection limits per Table 8.4
+  deflection_limits:
+    beams: 250       # L/250 for beams
+    cantilevers: 125 # L/125 for cantilevers
+    slabs: 200       # L/200 for slabs

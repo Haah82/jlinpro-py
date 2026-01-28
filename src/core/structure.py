@@ -239,11 +239,41 @@ class Structure(BaseModel):
 
             node_dofs = dof_map[load.node_id]
 
-            F[node_dofs[0]] += load.fx
-            F[node_dofs[1]] += load.fy
-            F[node_dofs[2]] += load.mz
+            F[node_dofs[0]] += load.fx  # ux
+            F[node_dofs[1]] += load.fy  # uy
+            F[node_dofs[5]] += load.mz  # rz (rotation about z-axis for 2D)
 
         return F
+
+    def _auto_constrain_2d_dofs(self) -> None:
+        """
+        Automatically constrain inactive DOFs for 2D structures.
+        
+        For 2D elements (Truss2D, Beam2D), constrains:
+        - uz (DOF 2): out-of-plane translation
+        - rx (DOF 3): rotation about x-axis
+        - ry (DOF 4): rotation about y-axis
+        
+        For trusses, also constrains rz to prevent rigid body rotation.
+        """
+        from ..elements.truss2d import Truss2D
+        from ..elements.beam2d import Beam2D
+        
+        # Check if all elements are 2D
+        is_2d = all(isinstance(elem, (Truss2D, Beam2D)) for elem in self.elements.values())
+        
+        if is_2d:
+            has_only_trusses = all(isinstance(elem, Truss2D) for elem in self.elements.values())
+            
+            for node in self.nodes.values():
+                # Always constrain out-of-plane DOFs for 2D
+                node.set_restraint(2, True)   # uz
+                node.set_restraint(3, True)   # rx
+                node.set_restraint(4, True)   # ry
+                
+                # For pure truss structures, constrain rz to prevent rigid body rotation
+                if has_only_trusses:
+                    node.set_restraint(5, True)   # rz
 
     def solve_static(self) -> None:
         """
@@ -253,6 +283,9 @@ class Structure(BaseModel):
         applies boundary conditions, solves for displacements,
         and calculates reactions and internal forces.
         """
+        # Auto-constrain inactive DOFs for 2D structures
+        self._auto_constrain_2d_dofs()
+        
         # Assemble global system
         K = self.assemble_global_stiffness()
         F = self.assemble_load_vector()
@@ -271,9 +304,8 @@ class Structure(BaseModel):
         dof_map = self.get_dof_map()
         for node_id, node in self.nodes.items():
             node_dofs = dof_map[node_id]
-            node.displacements[0] = U[node_dofs[0]]
-            node.displacements[1] = U[node_dofs[1]]
-            node.displacements[2] = U[node_dofs[2]]
+            for i in range(6):
+                node.displacements[i] = U[node_dofs[i]]
 
         # Calculate reactions: R = K_original @ U - F_applied
         R = K_original @ U - F_original
@@ -282,7 +314,7 @@ class Structure(BaseModel):
         for node_id, node in self.nodes.items():
             node_dofs = dof_map[node_id]
 
-            for local_dof in range(3):
+            for local_dof in range(6):
                 global_dof = node_dofs[local_dof]
                 if node.is_restrained(local_dof):
                     node.reactions[local_dof] = R[global_dof]

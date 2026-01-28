@@ -1,0 +1,132 @@
+# ACI 318-25 Material Properties
+# American Concrete Institute Standard for Structural Concrete
+
+concrete:
+  # Standard concrete strengths (psi converted to MPa)
+  # f'c in psi: 3000, 4000, 5000, 6000, 8000, 10000, 12000, 15000
+  
+  3000psi:
+    fc: 20.7     # Cylinder compressive strength f'c (MPa) = 3000 psi
+    Ec: 24855    # Modulus of elasticity (MPa) = 33 * wc^1.5 * sqrt(f'c), wc=145 pcf
+    fr: 3.83     # Modulus of rupture (MPa) = 7.5 * lambda * sqrt(f'c)
+    lambda: 1.0  # Lightweight modification factor
+  
+  4000psi:
+    fc: 27.6     # 4000 psi
+    Ec: 28705
+    fr: 4.42
+    lambda: 1.0
+  
+  5000psi:
+    fc: 34.5     # 5000 psi
+    Ec: 32085
+    fr: 4.94
+    lambda: 1.0
+  
+  6000psi:
+    fc: 41.4     # 6000 psi
+    Ec: 35117
+    fr: 5.41
+    lambda: 1.0
+  
+  8000psi:
+    fc: 55.2     # 8000 psi
+    Ec: 40568
+    fr: 6.24
+    lambda: 1.0
+  
+  10000psi:
+    fc: 69.0     # 10000 psi
+    Ec: 45376
+    fr: 6.98
+    lambda: 1.0
+  
+  12000psi:
+    fc: 82.7     # 12000 psi
+    Ec: 49693
+    fr: 7.65
+    lambda: 1.0
+  
+  15000psi:
+    fc: 103.4    # 15000 psi
+    Ec: 55505
+    fr: 8.55
+    lambda: 1.0
+
+steel:
+  Grade40:
+    fy: 276      # Yield strength (MPa) = 40 ksi
+    fu: 414      # Ultimate strength (MPa) = 60 ksi
+    Es: 200000   # Modulus of elasticity (MPa) = 29000 ksi
+    epsilon_y: 0.00138  # Yield strain
+  
+  Grade60:
+    fy: 414      # 60 ksi
+    fu: 620      # 90 ksi
+    Es: 200000
+    epsilon_y: 0.00207
+  
+  Grade75:
+    fy: 517      # 75 ksi
+    fu: 690      # 100 ksi
+    Es: 200000
+    epsilon_y: 0.00259
+  
+  Grade80:
+    fy: 550      # 80 ksi (capped at 550 MPa per common practice)
+    fu: 724      # 105 ksi
+    Es: 200000
+    epsilon_y: 0.00275
+
+# Design parameters per ACI 318-25
+parameters:
+  min_cover_cast_in_place: 40.0    # Minimum concrete cover (mm) for cast-in-place
+  min_cover_precast: 20.0          # Minimum cover for precast
+  
+  # Strength reduction factors φ (Table 21.2.1)
+  phi_factors:
+    tension_controlled: 0.90        # Net tensile strain ≥ 0.005
+    compression_controlled_tied: 0.65     # Net tensile strain ≤ epsilon_ty
+    compression_controlled_spiral: 0.75   # Spiral or composite
+    shear_torsion: 0.75
+    bearing: 0.65
+    post_tensioning: 0.90
+    strut_tie_nodes: 0.75
+  
+  # Beta1 factor for equivalent rectangular stress block (Table 22.2.2.4.3)
+  beta1:
+    default: 0.85          # For f'c ≤ 28 MPa (4000 psi)
+    reduction_rate: 0.05   # Reduce 0.05 for each 7 MPa (1000 psi) above 28 MPa
+    minimum: 0.65          # Minimum value
+  
+  # Minimum reinforcement ratios
+  rho_min_flexure: 0.0033  # As,min = 0.25*sqrt(f'c)/fy ≥ 1.4/fy (MPa units)
+  rho_max_tension_controlled: 0.025  # Maximum for tension-controlled
+  
+  # Shear design parameters
+  shear:
+    vc_coefficient: 0.17    # Vc = 0.17*lambda*sqrt(f'c)*bw*d (MPa units)
+    vc_detailed_c: 0.16     # For detailed calculation
+    vc_detailed_m: 0.29     # Vc factors
+    max_vs: 0.66            # Vs,max = 0.66*sqrt(f'c)*bw*d (MPa units)
+  
+  # Development length factors
+  development:
+    psi_t: 1.3              # Top bar factor (>300mm fresh concrete below)
+    psi_e: 1.0              # Epoxy coating factor (uncoated)
+    psi_s: 0.8              # Bar size factor (db ≤ 20mm)
+    psi_g: 1.0              # Grade factor
+    lambda: 1.0             # Lightweight concrete factor
+  
+  # Deflection limits (Table 24.2.2)
+  deflection_limits:
+    flat_roofs: 180         # L/180 for flat roofs
+    floors: 360             # L/360 for floors
+    roof_floor_supporting_nonstructural: 480  # L/480
+    roof_floor_not_supporting_nonstructural: 240  # L/240
+  
+  # Crack control parameters (Table 24.3.2)
+  crack_control:
+    s_max_interior: 300     # Maximum spacing (mm) for interior exposure
+    s_max_exterior: 250     # Maximum spacing (mm) for exterior exposure
+    cc: 40                  # Clear cover to tension reinforcement (mm)

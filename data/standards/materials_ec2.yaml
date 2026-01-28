@@ -1,0 +1,319 @@
+# EN 1992-1-1:2004 Material Properties
+# Eurocode 2: Design of Concrete Structures - Part 1-1: General Rules
+
+concrete:
+  # Standard concrete strength classes (cylinder/cube)
+  # Format: fck (MPa) - characteristic cylinder compressive strength
+  
+  C12_15:
+    fck: 12      # Characteristic cylinder strength (MPa)
+    fck_cube: 15 # Characteristic cube strength (MPa)
+    fcm: 20      # Mean compressive strength (MPa)
+    fctm: 1.6    # Mean tensile strength (MPa)
+    fctk_005: 1.1  # 5% fractile tensile strength (MPa)
+    fctk_095: 2.0  # 95% fractile tensile strength (MPa)
+    Ecm: 27000   # Secant modulus of elasticity (MPa)
+    epsilon_c1: 1.8  # Strain at peak stress (‰)
+    epsilon_cu1: 3.5 # Ultimate strain (‰)
+  
+  C16_20:
+    fck: 16
+    fck_cube: 20
+    fcm: 24
+    fctm: 1.9
+    fctk_005: 1.3
+    fctk_095: 2.5
+    Ecm: 29000
+    epsilon_c1: 1.9
+    epsilon_cu1: 3.5
+  
+  C20_25:
+    fck: 20
+    fck_cube: 25
+    fcm: 28
+    fctm: 2.2
+    fctk_005: 1.5
+    fctk_095: 2.9
+    Ecm: 30000
+    epsilon_c1: 2.0
+    epsilon_cu1: 3.5
+  
+  C25_30:
+    fck: 25
+    fck_cube: 30
+    fcm: 33
+    fctm: 2.6
+    fctk_005: 1.8
+    fctk_095: 3.3
+    Ecm: 31000
+    epsilon_c1: 2.1
+    epsilon_cu1: 3.5
+  
+  C30_37:
+    fck: 30
+    fck_cube: 37
+    fcm: 38
+    fctm: 2.9
+    fctk_005: 2.0
+    fctk_095: 3.8
+    Ecm: 33000
+    epsilon_c1: 2.2
+    epsilon_cu1: 3.5
+  
+  C35_45:
+    fck: 35
+    fck_cube: 45
+    fcm: 43
+    fctm: 3.2
+    fctk_005: 2.2
+    fctk_095: 4.2
+    Ecm: 34000
+    epsilon_c1: 2.25
+    epsilon_cu1: 3.5
+  
+  C40_50:
+    fck: 40
+    fck_cube: 50
+    fcm: 48
+    fctm: 3.5
+    fctk_005: 2.5
+    fctk_095: 4.6
+    Ecm: 35000
+    epsilon_c1: 2.3
+    epsilon_cu1: 3.5
+  
+  C45_55:
+    fck: 45
+    fck_cube: 55
+    fcm: 53
+    fctm: 3.8
+    fctk_005: 2.7
+    fctk_095: 4.9
+    Ecm: 36000
+    epsilon_c1: 2.4
+    epsilon_cu1: 3.5
+  
+  C50_60:
+    fck: 50
+    fck_cube: 60
+    fcm: 58
+    fctm: 4.1
+    fctk_005: 2.9
+    fctk_095: 5.3
+    Ecm: 37000
+    epsilon_c1: 2.45
+    epsilon_cu1: 3.5
+  
+  C55_67:
+    fck: 55
+    fck_cube: 67
+    fcm: 63
+    fctm: 4.2
+    fctk_005: 3.0
+    fctk_095: 5.5
+    Ecm: 38000
+    epsilon_c1: 2.5
+    epsilon_cu1: 3.2
+  
+  C60_75:
+    fck: 60
+    fck_cube: 75
+    fcm: 68
+    fctm: 4.4
+    fctk_005: 3.1
+    fctk_095: 5.7
+    Ecm: 39000
+    epsilon_c1: 2.6
+    epsilon_cu1: 3.0
+  
+  C70_85:
+    fck: 70
+    fck_cube: 85
+    fcm: 78
+    fctm: 4.6
+    fctk_005: 3.2
+    fctk_095: 6.0
+    Ecm: 41000
+    epsilon_c1: 2.7
+    epsilon_cu1: 2.8
+  
+  C80_95:
+    fck: 80
+    fck_cube: 95
+    fcm: 88
+    fctm: 4.8
+    fctk_005: 3.4
+    fctk_095: 6.3
+    Ecm: 42000
+    epsilon_c1: 2.8
+    epsilon_cu1: 2.8
+  
+  C90_105:
+    fck: 90
+    fck_cube: 105
+    fcm: 98
+    fctm: 5.0
+    fctk_005: 3.5
+    fctk_095: 6.6
+    Ecm: 44000
+    epsilon_c1: 2.8
+    epsilon_cu1: 2.8
+
+steel:
+  # Reinforcing steel classes per Table C.1
+  ClassA:
+    fyk: 400     # Characteristic yield strength (MPa)
+    ftk: 450     # Characteristic tensile strength (MPa)
+    Es: 200000   # Modulus of elasticity (MPa)
+    epsilon_uk: 2.5  # Characteristic strain at max load (%)
+    k: 1.05      # ftk/fyk ratio
+    epsilon_ud: 0.9  # Characteristic strain at max load for design
+  
+  ClassB:
+    fyk: 500
+    ftk: 550
+    Es: 200000
+    epsilon_uk: 5.0
+    k: 1.08
+    epsilon_ud: 0.9
+  
+  ClassC:
+    fyk: 600
+    ftk: 660
+    Es: 200000
+    epsilon_uk: 7.5
+    k: 1.15
+    epsilon_ud: 0.9
+  
+  # Common steel grades
+  B400A:
+    fyk: 400
+    ftk: 440
+    Es: 200000
+    epsilon_uk: 2.5
+    k: 1.10
+  
+  B400B:
+    fyk: 400
+    ftk: 440
+    Es: 200000
+    epsilon_uk: 5.0
+    k: 1.10
+  
+  B400C:
+    fyk: 400
+    ftk: 440
+    Es: 200000
+    epsilon_uk: 7.5
+    k: 1.10
+  
+  B400:
+    fyk: 400
+    ftk: 480
+    Es: 200000
+    epsilon_uk: 5.0
+    k: 1.20
+  
+  B500A:
+    fyk: 500
+    ftk: 525
+    Es: 200000
+    epsilon_uk: 2.5
+    k: 1.05
+  
+  B500B:
+    fyk: 500
+    ftk: 540
+    Es: 200000
+    epsilon_uk: 5.0
+    k: 1.08
+  
+  B500C:
+    fyk: 500
+    ftk: 575
+    Es: 200000
+    epsilon_uk: 7.5
+    k: 1.15
+
+# Design parameters per EN 1992-1-1:2004
+parameters:
+  # Concrete cover requirements (Table 4.2)
+  min_cover:
+    XC1: 15      # Dry or permanently wet (mm)
+    XC2: 25      # Wet, rarely dry
+    XC3: 25      # Moderate humidity
+    XC4: 30      # Cyclic wet and dry
+    XD1: 30      # Moderate humidity + chlorides
+    XD2: 35      # Wet, rarely dry + chlorides
+    XD3: 40      # Cyclic wet/dry + chlorides
+    XS1: 35      # Marine, exposed to airborne salt
+    XS2: 40      # Permanently submerged
+    XS3: 45      # Tidal, splash and spray zones
+  
+  # Partial safety factors (Table 2.1N)
+  gamma_c: 1.5   # Concrete in ULS
+  gamma_s: 1.15  # Steel in ULS
+  gamma_c_acc: 1.2  # Accidental design situation
+  gamma_s_acc: 1.0  # Accidental design situation
+  
+  # Alpha coefficients for stress-strain relationships
+  alpha_cc: 1.0  # Long-term effects on compressive strength
+  alpha_ct: 1.0  # Tensile strength
+  
+  # Stress block parameters (3.1.7)
+  stress_block:
+    eta: 1.0     # Strength factor
+    lambda: 0.8  # Effective depth factor (fck ≤ 50 MPa)
+    lambda_reduction: 0.004  # Reduction per MPa above 50
+    lambda_min: 0.65
+  
+  # Minimum reinforcement (9.2.1.1)
+  rho_min_flexure: 0.0013  # As,min = max(0.26*fctm/fyk, 0.0013)*bt*d
+  rho_min_coefficient: 0.26  # Coefficient for minimum reinforcement
+  
+  # Maximum reinforcement (9.2.1.1)
+  rho_max: 0.04  # As,max = 0.04*Ac outside lap locations
+  
+  # Shear design parameters (6.2)
+  shear:
+    vmin_coefficient: 0.035  # VRd,c ≥ vmin*bw*d
+    k_size_effect_max: 2.0   # k = min(1 + sqrt(200/d), 2.0)
+    k1: 0.15                 # Coefficient for axial force effect
+    vrd_c_coefficient: 0.12  # VRd,c = [0.12*k*(100*rho*fck)^(1/3)]*bw*d
+    vrd_c_min_k: 0.035       # Minimum shear capacity
+    cot_theta_min: 1.0       # Minimum angle for strut (θ = 45°)
+    cot_theta_max: 2.5       # Maximum angle for strut (θ = 21.8°)
+    alpha_cw: 1.0            # Coefficient for stress in compression chord
+    v1: 0.6                  # Strength reduction factor v1 = 0.6*(1-fck/250)
+  
+  # Development length (8.4.3)
+  development:
+    alpha1: 1.0    # Shape factor (straight bars)
+    alpha2: 1.0    # Concrete cover factor (cd > 3db)
+    alpha3: 1.0    # Confinement by transverse reinforcement
+    alpha4: 1.0    # Influence of welded bars
+    alpha5: 1.0    # Pressure transverse to splitting plane
+    eta1: 1.0      # Bond conditions (good)
+    eta2: 1.0      # Bar diameter (db ≤ 32mm)
+  
+  # Crack width limits (Table 7.1N)
+  crack_limits:
+    reinforced:
+      quasi_permanent: 0.3  # Quasi-permanent loads (mm)
+      frequent: 0.2         # Frequent loads (mm) - recommended
+    prestressed:
+      quasi_permanent: 0.2
+      frequent: 0.2
+      decompression: 0.0    # For X0, XC1 environments
+  
+  # Deflection limits (7.4.1)
+  deflection_limits:
+    general: 250         # L/250 for general case
+    appearance: 500      # L/500 where sensitive to deformation
+    cantilever: 125      # L/125 for cantilevers
+  
+  # Durability parameters
+  durability:
+    min_cement_content: 260    # kg/m³ for XC1
+    max_water_cement_ratio: 0.65  # For XC1
+    min_strength_class: "C20_25"  # Minimum for reinforced concrete

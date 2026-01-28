@@ -85,17 +85,38 @@ class AbstractElement(BaseModel, ABC):
         Calculate element stiffness matrix in global coordinate system.
 
         Uses transformation: K_global = T^T @ K_local @ T
+        
+        For 2D elements (6x6), expands to 12x12 to match global DOF numbering
+        (6 DOFs per node: ux, uy, uz, rx, ry, rz).
 
         Returns:
-            Global stiffness matrix
+            Global stiffness matrix (12x12 for 2-node elements)
         """
         K_local = self.get_stiffness_local()
         T = self.get_transformation_matrix()
 
-        # K_global = T^T @ K_local @ T
-        K_global = T.T @ K_local @ T
-
-        return K_global
+        # K_global = T^T @ K_local @ T (still 6x6 or element size)
+        K_elem = T.T @ K_local @ T
+        
+        # Check if this is a 2D element that needs expansion to 6 DOFs per node
+        n_nodes = len(self.nodes)
+        if K_elem.shape[0] == 6 and n_nodes == 2:
+            # Expand from 6x6 (2 nodes × 3 DOFs) to 12x12 (2 nodes × 6 DOFs)
+            K_expanded = np.zeros((12, 12))
+            
+            # Mapping: element DOF [ux, uy, rz] -> global DOF [ux, uy, rz] at indices [0, 1, 5]
+            # Node i: elem [0,1,2] -> global [0,1,5]
+            # Node j: elem [3,4,5] -> global [6,7,11]
+            elem_to_global = [0, 1, 5, 6, 7, 11]
+            
+            for i, gi in enumerate(elem_to_global):
+                for j, gj in enumerate(elem_to_global):
+                    K_expanded[gi, gj] = K_elem[i, j]
+            
+            return K_expanded
+        else:
+            # 3D element or other - return as is
+            return K_elem
 
     def validate_connectivity(self) -> bool:
         """

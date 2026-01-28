@@ -69,11 +69,15 @@ class TestTruss2D:
         E = 200e9
         k = E * A / L
 
-        # Check structure of local stiffness
-        assert K_local.shape == (4, 4)
+        # Check structure of local stiffness (6x6 for 3 DOFs per node)
+        assert K_local.shape == (6, 6)
+        # Axial stiffness in local DOF 0 and 3 (u-direction)
         assert K_local[0, 0] == pytest.approx(k)
-        assert K_local[2, 2] == pytest.approx(k)
-        assert K_local[0, 2] == pytest.approx(-k)
+        assert K_local[3, 3] == pytest.approx(k)
+        assert K_local[0, 3] == pytest.approx(-k)
+        # Transverse and rotational DOFs should be zero for truss
+        assert K_local[1, 1] == pytest.approx(0.0)
+        assert K_local[2, 2] == pytest.approx(0.0)
 
     def test_truss_transformation_matrix(self):
         """Test transformation matrix for horizontal truss."""
@@ -87,9 +91,13 @@ class TestTruss2D:
         T = truss.get_transformation_matrix()
 
         # For horizontal element: cx=1, cy=0
-        assert T.shape == (4, 4)
-        assert T[0, 0] == pytest.approx(1.0)
-        assert T[0, 1] == pytest.approx(0.0)
+        # 6x6 transformation matrix for 3 DOFs per node
+        assert T.shape == (6, 6)
+        assert T[0, 0] == pytest.approx(1.0)  # cos(0) = 1
+        assert T[0, 1] == pytest.approx(0.0)  # sin(0) = 0
+        assert T[1, 0] == pytest.approx(0.0)  # -sin(0) = 0
+        assert T[1, 1] == pytest.approx(1.0)  # cos(0) = 1
+        assert T[2, 2] == pytest.approx(1.0)  # rotation unchanged
 
     def test_truss_global_stiffness(self):
         """Test global stiffness matrix calculation."""
@@ -105,8 +113,8 @@ class TestTruss2D:
         # Should be symmetric
         assert np.allclose(K_global, K_global.T)
 
-        # Should be 4x4
-        assert K_global.shape == (4, 4)
+        # Should be 12x12 for 2 nodes with 6 DOFs each (expanded from 6x6 element matrix)
+        assert K_global.shape == (12, 12)
 
     def test_simple_truss_validation(self):
         """
@@ -134,7 +142,8 @@ class TestTruss2D:
         assert truss2.get_length() == pytest.approx(1.0, rel=1e-3)
 
         # Calculate internal force for a simple displacement
-        u_global = np.array([0.0, 0.0, 0.001, 0.0])  # Small vertical displacement
+        # 6 DOFs: [ux, uy, uz, rx, ry, rz] - only ux and uy are used for 2D truss
+        u_global = np.array([0.0, 0.0, 0.0, 0.0, 0.001, 0.0])  # Small vertical displacement at node 2
 
         forces = truss1.get_internal_forces(u_global)
 
@@ -248,8 +257,8 @@ class TestBeam2D:
         # Should be symmetric
         assert np.allclose(K_global, K_global.T)
 
-        # Should be 6x6
-        assert K_global.shape == (6, 6)
+        # Should be 12x12 for 2 nodes with 6 DOFs each (expanded from 6x6 element matrix)
+        assert K_global.shape == (12, 12)
 
     def test_cantilever_beam_theory(self):
         """
